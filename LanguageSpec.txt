@@ -1,0 +1,258 @@
+
+TickScript
+PulseScript
+
+// comments
+/* multi line comments */
+
+<|..> // pattern expression <> betekent tussen 2 ticks in, waarbij het aantal tekens over de delta tijd wordt verdeeld
+
+
+[|..] // pattern expression [] betekent op opvolgende ticks, in dit geval 1x wel, 2x niet
+
+let kickPattern  = [|.]
+let snarePattern = [.|]
+let hatsPattern = <||..|...>
+
+
+{ ... some code ... } // compound statement
+
+wheel is een global object met info over het wiel
+
+wheel.-> = {
+    // code die moet worden aangeroepen als wiel naar rechts draait
+}
+
+wheel.<- = {
+    [.|..] kick.play()
+}
+
+//==================================================================================
+
+snare.line = (0->1: 100, 1->0.5: 50)
+
+// line expression:
+// line: numeric arrowRight numeric colon numeric
+
+line expression:
+    dot openParentheses line (comma line)* closeParentheses
+
+
+block statement (kan ook gebruikt worden als lambda):
+    openBraces statement (newline statement)* closeBraces
+
+//==================================================================================
+
+factor: numericLiteral | openParentheses expression closeParentheses | numericVariable
+
+term: factor ((times | devide) factor)*
+
+expression: term ((plus | minus) term)*
+
+//==================================================================================
+
+variable assignment statement:
+    identifier equals statement | expression
+
+function call: identifier openParentheses expression (comma expression)* closeParentheses
+
+function declaration: func-keyword identifier openParentheses identifier (comma identifier)* closeParentheses blockStatement
+
+//==================================================================================
+
+voorbeelden interactie tussen Max en TickScript:
+
+//=================================================
+
+Max stuurt message '/tick/left/count' 200
+
+TickScript:
+
+kick = KickDrum()
+
+wheel.<- = {
+    [|...] kick.play()
+}
+
+TickScript interpreter:
+    - kijkt welke statements op count=200 moeten worden getriggered
+    - ziet dat kick.play() moet worden uitgevoerd
+    - stuurt message '/instruments/kick/' 'trigger'
+
+//=================================================
+
+TickScript:
+
+snare = SnareDrum() // TickScript weet zelf dat dit snare nummer 0 is
+
+TickScript interpreter:
+    - stuurt message naar Max: 'instruments/new/snare' 0
+
+Max:
+    - ontvangt 'instruments/new/snare' 0
+    - stuurt message door naar de juiste handler
+    - handler connect bestaande instance van snare aan output
+
+//=================================================
+
+TickScript:
+
+pluck = Saw().(1->0:100) // pluck met decay = 100ms
+delay = PingPong(500, 400)
+
+pluck -(50)> delay // route statement: - ( wet percentage ) >
+
+wheel.-> = {
+    <|.||> pluck.play(60, 67, 64)
+}
+
+TickScript interpreter:
+    - stuurt messages naar Max:
+        'instruments/saw/0' 'on'
+        'instruments/saw/0/line' '1., 0. 100'
+        'effects/pingpong/0/time/left' '500'
+        'effects/pingpong/0/time/right' '400'
+        'route/side' 'instruments/saw/0 effects/delay/pingpong/0 0.5'
+
+Max:
+    - stuurt 'tick/left/deltatime' '500' //500 ms between last two ticks
+
+//---------------------------------------
+
+
+//---------------------------------------
+
+
+kinds of statements:
+    - expression statement:
+        - alles dat niet met een keyword begint:
+        - assignment statements
+        - function calls
+
+3 + 4:
+- parser ziet numeric -> gaat expression statement parsen...
+
+add(3,4) + 4:
+- parser ziet identifier -> parser ziet '(' -> weet dat het function call is
+
+
+Operator precedence:
+
+1. '.' - member acces, '()' - function call
+2. '*' of '/' of '%'
+3. '+' of '-'
+4. '=' - assignment
+
+//=================================================================
+
+Extented Backus-Naur form of TickScript:
+
+character = a-z | A-Z
+
+digit = 0-9
+
+numeric_literal = digit, {digit}, ['.', digit, {digit}];
+
+identifier = character | identifier { character | digit | '_' };
+
+expression = logical, [('=' | '+=' | '-=' | '*=' | '/=' | '%='), expression];
+
+logical = equality, {('&&' | '||'), equality};
+
+equality = comparison, {('==' | '!='), comparison};
+
+comparison = plus_minus, {('<' | '>' | '<=' | '>='), plus_minus};
+
+plus_minus = times_devide, {('+' | '-'), times_devide};
+
+times_devide = unary, {('*' | '/' | '%'), unary};
+
+unary = ['-' | '+' | '!'], factor;
+
+factor = identifier | numeric_literal | function_call | '(', expression, ')' | 'false' | 'true';
+
+function_call = identifier, '(', [expression, {',', expression}], ')';
+
+function_definition = 'func', identifier, '(', [identifier, {',', identifier}], ')', block_statement;
+
+block_statement = '{', statement_list, '}';
+
+statement_list = {statement};
+
+statement = expression_statement | return_statement | print_statement | declaration_statement;
+
+print_statement = 'print', '(', expression, {',', expression}, ')';
+
+
+tick_callback = string_literal, '->', '(', [identifier, {',', identifier}], ')' tick_function_body;
+
+
+
+//=====================================================================
+
+voorbeeld compiler stages:
+//=======================================================
+// TickTack code:
+
+func add (a, b) { return a + b }
+
+let x = add (1, 1)
+
+//=======================================================
+// Lexer output:
+
+keyword:        'func'
+identifier:     'add'
+operator:       '('
+identifier:     'a'
+operator:       ','
+identifier:     'b'
+operator:       ')'
+operator:       '{'
+keyword:        'return'
+operator:       '}'
+operator:       '\n'
+operator:       '\n'
+keyword:        'let'
+identifier:     'x'
+operator:       '='
+identifier:     'add'
+operator:       '('
+literal:        '1'
+operator:       ','
+literal:        '1'
+operator:       ')'
+
+
+//=======================================================
+// Parser output:
+
+{
+    "language": "TickTack",
+    "statement_list": [
+        "function_definition": {
+            "identifier": "add",
+            "arguments": ["a", "b"],
+            "body" {
+                "return_statement": {
+                    "expression": {
+                        "binary_operation_plus": {
+                            "lhs": { "unqualified_name": "a" },
+                            "rhs": { "unqualified_name": "b" }
+                        }
+                    }
+                }
+            }
+        },
+        "assignment": {
+            "identifier": "x",
+            "expression": {
+                "function_call": {
+                    "identifier": "add",
+                    "constant": true
+                    "arguments": ["numeric_literal": 1, "numeric_literal": 1]
+                }
+            }
+        },
+    ]
+}

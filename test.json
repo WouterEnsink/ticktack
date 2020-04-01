@@ -1,0 +1,60 @@
+
+{
+    "language": "TickTack",
+
+    "root": {
+        "statement_list": [
+            {"variable_declaration": {
+                "identifier": "foo",
+                "constant": false,
+                "expression": {
+                    "binary_operation_plus": {
+                        "left_operant": { "numeric_literal": 5 },
+                        "right_operant": { "numeric_literal": 6 }
+                    }
+                }
+            }},
+
+            {"assignment": {
+                "identifier": "foo",
+                "expression": {
+                    "binary_operation_modulo": {
+                        "left_operant": { "unqualified_name": "foo" },
+                        "right_operant": { "numeric_literal": 10 }
+                    }
+                }
+            }},
+
+            "function_definition": {
+                "identifier": "add",
+                "arguments": ["a", "b"],
+                "body": {
+                    "statement_list": {
+                        "return_statement": {
+                            "expression": {
+                                "binary_operation_plus": {
+                                    "left_operant": { "unqualified_name": "a" },
+                                    "right_operant": { "unqualified_name": "b" }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            "variable_declaration": {
+                "identifier": "x",
+                "constant": true,
+                "expression": {
+                    "function_call": {
+                        "identifier": "add",
+                        "arguments": [
+                            { "expression": { "unqualified_name": "foo" }},
+                            { "expression": { "numeric_literal": 1 }}
+                        ]
+                    }
+                }
+            }]
+        }
+    }
+}

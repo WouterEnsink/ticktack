@@ -1,0 +1,65 @@
+{
+  "language": "TickTack",
+  "version": "0.1b",
+  "root": {
+    "block_statement": [
+      {
+        "variable_declaration": {
+          "identifier": "x",
+          "constant": true,
+          "expression": {
+            "numeric_literal": 3.0
+          }
+        }
+      },
+      {
+        "function_definition": {
+          "identifier": "foo",
+          "arguments": [
+            "x",
+            "y"
+          ],
+          "body": {
+            "block_statement": [
+              {
+                "return_statement": {
+                  "expression": {
+                    "binary_operation": {
+                      "type": "+",
+                      "left_operant": {
+                        "unqualified_name": "x"
+                      },
+                      "right_operant": {
+                        "unqualified_name": "y"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "expression_statement": {
+          "assignment": {
+            "left_operant": {
+              "unqualified_name": "x"
+            },
+            "right_operant": {
+              "binary_operation": {
+                "type": "+",
+                "left_operant": {
+                  "unqualified_name": "x"
+                },
+                "right_operant": {
+                  "numeric_literal": 1.0
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
