@@ -3,6 +3,8 @@
 
 from TickScript import Tokens, TokenIterator
 import json
+import sys
+
 
 class Parser(TokenIterator):
     def __init__(self, code):
@@ -22,7 +24,7 @@ class Parser(TokenIterator):
 
 
     def parse(self):
-        tree = { 'language': 'TickTack', 'version': '0.1b' }
+        tree = {'language': 'TickTack', 'version': '0.1b'}
         self.advance()
         tree['root'] = self.parseStatementList()
         return tree
@@ -39,14 +41,12 @@ class Parser(TokenIterator):
 
 
     def parseStatementList(self):
-        block = { "block_statement": [] }
+        block = {"block_statement": []}
 
         if self.currentTokenValue != Tokens.closeBraces:
             block["block_statement"].append(self.parseStatement())
 
         while self.currentTokenValue != Tokens.closeBraces and self.currentTokenValue != Tokens.endOfFile:
-            #self.consumeValue(Tokens.newLine, f'Expected newline before statement, current token: {self.currentTokenValue}')
-
             while self.currentTokenValue == Tokens.newLine:
                 self.advance()
 
@@ -64,22 +64,22 @@ class Parser(TokenIterator):
             return self.parseOutletDeclaration()
 
         if self.currentTokenType == Tokens.identifierType or self.currentTokenType == Tokens.numericLiteralType:
-            return { 'expression_statement': self.parseExpression() }
+            return {'expression_statement': self.parseExpression()}
 
         if self.advanceIfTokenValueIsExpected(Tokens.varKeyword):
-            return { 'variable_declaration': self.parseVariableDeclaration(constant=False) }
+            return {'variable_declaration': self.parseVariableDeclaration(constant=False)}
 
         if self.advanceIfTokenValueIsExpected(Tokens.letKeyword):
-            return { 'variable_declaration': self.parseVariableDeclaration(constant=True) }
+            return {'variable_declaration': self.parseVariableDeclaration(constant=True)}
 
         if self.advanceIfTokenValueIsExpected(Tokens.returnKeyword):
-            return { 'return_statement': { 'expression': self.parseExpression() }}
+            return {'return_statement': {'expression': self.parseExpression()}}
 
         if self.advanceIfTokenValueIsExpected(Tokens.funcKeyword):
-            return { 'function_definition': self.parseFunctionDefinition() }
+            return {'function_definition': self.parseFunctionDefinition()}
 
         if self.advanceIfTokenValueIsExpected(Tokens.ifKeyword):
-            return { 'if_statement': self.parseIfStatement() }
+            return {'if_statement': self.parseIfStatement()}
 
         if self.currentTokenValue == Tokens.openBraces:
             return self.parseBlockStatement()
@@ -88,19 +88,24 @@ class Parser(TokenIterator):
             return self.parsePrintStatement()
 
         if self.currentTokenType == Tokens.stringLiteralType:
-            return { 'osc_callback_definition': self.parseCallbackDefinition() }
+            return {'osc_callback_definition': self.parseCallbackDefinition()}
 
         if self.advanceIfTokenValueIsExpected(Tokens.openBracket):
             return self.parseTickStatement()
 
-        return { 'empty_statement': None }
+        return {'empty_statement': None}
 
 
     def parsePrintStatement(self):
         self.consumeValue(Tokens.openParentheses, 'Expected "(" after "print"')
-        expr = self.parseExpression()
+        exprs = [self.parseExpression()]
+        while self.currentTokenValue != Tokens.closeParentheses and self.currentTokenValue != Tokens.endOfFile:
+            self.consumeValue(Tokens.comma, 'Expected "," or ")" after expression in print statement')
+            exprs.append(self.parseExpression())
+
         self.consumeValue(Tokens.closeParentheses, 'Expected ")" to close off print statement')
-        return {'print_statement': expr}
+
+        return {'print_statement': exprs}
 
 
     def parseCallbackDefinition(self):
@@ -120,7 +125,7 @@ class Parser(TokenIterator):
             self.consumeType(Tokens.identifierType, 'Expected identifier in argument list')
 
         block = self.parseBlockStatement()
-        return { 'address': address, 'argumentList': argumentList, 'body': block }
+        return {'address': address, 'argumentList': argumentList, 'body': block}
 
 
     def parseTickStatement(self):
@@ -146,7 +151,7 @@ class Parser(TokenIterator):
         for i in range(len(conds) - 1):
             condition = {'||': [condition, conds[i+1]]}
 
-        return { 'if_statement': { 'condition': condition, 'if_block': stmt, 'else_block': None }}
+        return {'if_statement': {'condition': condition, 'if_block': stmt, 'else_block': None}}
 
 
     def parseOutletDeclaration(self):
@@ -155,7 +160,7 @@ class Parser(TokenIterator):
         self.consumeValue(Tokens.arrowRight, 'Expected "->" after identifier in outlet declaration')
         address = self.currentTokenValue
         self.consumeType(Tokens.stringLiteralType, 'Expected address after "->" in outlet declaration')
-        return { 'outlet_declaration': { 'identifier': identifier, 'address': address }}
+        return {'outlet_declaration': {'identifier': identifier, 'address': address}}
 
 
     def parseIfStatement(self):
@@ -171,7 +176,7 @@ class Parser(TokenIterator):
         if self.advanceIfTokenValueIsExpected(Tokens.elseKeyword):
             elseBlock = self.parseStatement()
 
-        return { 'condition': condition, 'if_block': ifBlock, 'else_block': elseBlock }
+        return {'condition': condition, 'if_block': ifBlock, 'else_block': elseBlock}
 
 
     def parseFunctionDefinition(self):
@@ -193,7 +198,7 @@ class Parser(TokenIterator):
         self.consumeValue(Tokens.closeParentheses, 'Expected ")" to close off function arguments')
         block = self.parseBlockStatement()
 
-        return { 'identifier': identifier, 'arguments': arguments, 'body': block }
+        return {'identifier': identifier, 'arguments': arguments, 'body': block}
 
 
     def parseFunctionCall(self, identifier):
@@ -204,7 +209,7 @@ class Parser(TokenIterator):
              args.append(self.parseExpression())
 
         self.advance()
-        return { 'function_call': { 'identifier': identifier, 'arguments': args }}
+        return {'function_call': {'identifier': identifier, 'arguments': args}}
 
 
     def parseVariableDeclaration(self, constant):
@@ -221,7 +226,7 @@ class Parser(TokenIterator):
         if expr == None:
             self.throwLocationError('Expected expression after "=" in variable declaration')
 
-        return { 'identifier': identifier, 'constant': constant, 'expression': expr }
+        return {'identifier': identifier, 'constant': constant, 'expression': expr}
 
 
     def parseSuffix(self, identifier):
@@ -231,7 +236,7 @@ class Parser(TokenIterator):
         if self.advanceIfTokenValueIsExpected(Tokens.dot):
             return self.parseControllerFunctionCall(identifier)
 
-        return { 'unqualified_name': identifier }
+        return {'unqualified_name': identifier}
 
 
     def parseFactor(self):
@@ -241,11 +246,11 @@ class Parser(TokenIterator):
             return self.parseSuffix(token)
 
         if self.advanceIfTokenTypeIsExpected(Tokens.numericLiteralType):
-            return { 'numeric_literal': float(token) }
+            return {'numeric_literal': float(token)}
 
         if token == Tokens.trueKeyword or token == Tokens.falseKeyword:
             self.advance()
-            return { 'boolean_literal': (token == Tokens.trueKeyword) }
+            return {'boolean_literal': (token == Tokens.trueKeyword)}
 
         if self.advanceIfTokenValueIsExpected(Tokens.openParentheses):
             expr = self.parseExpression()
@@ -352,29 +357,50 @@ class Parser(TokenIterator):
 #==================================================================================
 
 
-def parserTest():
-    code = '''  if (x == 3) x = 4 else if (x == 4) x = 3 \n
-                outlet kick -> \'kick\' \n
-                let x = 3 \n
-                func foo (x, y) { return x + y }\n
-                x += 1 \n
-                [..|.|] if (x == 3) kick(x)
+# def parserTest():
+#     code = '''  if (x == 3) x = 4 else if (x == 4) x = 3 \n
+#                 outlet kick -> \'kick\' \n
+#                 let x = 3 \n
+#                 func foo (x, y) { return x + y }\n
+#                 x += 1 \n
+#                 [..|.|] if (x == 3) kick(x)
+#
+#                 '/left'->(dt) {
+#                     [|..|.] kick()
+#                 }
+#
+#                 func add(a, b) { return a + b }
+#            '''
+#
+#     p = Parser(code)
+#
+#     try:
+#         tree = p.parse()
+#
+#         with open('tick_tack_syntax.tack', 'w') as file:
+#             file.write(json.dumps(tree, indent=2))
+#
+#     except Exception as error:
+#         print(error)
+#         print('Parsing Failed')
+#
+# parserTest()
 
-                '/left'->(dt) {
-                    [..|] kick()
-                }
-           '''
 
-    p = Parser(code)
+if __name__ == '__main__':
+    sourcePath = sys.argv[1]
+    targetPath = sys.argv[2]
 
-    try:
-        tree = p.parse()
+    with open(sourcePath, 'r') as sourceFile:
+        data = sourceFile.read()
+        print(f'source:\n\n{data}')
 
-        with open('tick_tack_syntax.tack', 'w') as file:
-            file.write(json.dumps(tree, indent=2))
+        try:
+            parser = Parser(data)
+            tree = parser.parse()
 
-    except Exception as error:
-        print(error)
-        print('Parsing Failed')
+            with open(targetPath, 'w') as targetFile:
+                targetFile.write(json.dumps(tree, indent=2))
 
-parserTest()
+        except Exception as error:
+            print(f'Parsing Failed: {error}')
