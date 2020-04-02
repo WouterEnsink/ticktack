@@ -45,7 +45,7 @@ class Parser(TokenIterator):
             block["block_statement"].append(self.parseStatement())
 
         while self.currentTokenValue != Tokens.closeBraces and self.currentTokenValue != Tokens.endOfFile:
-            self.consumeValue(Tokens.newLine, f'Expected newline before statement, current token: {self.currentTokenValue}')
+            #self.consumeValue(Tokens.newLine, f'Expected newline before statement, current token: {self.currentTokenValue}')
 
             while self.currentTokenValue == Tokens.newLine:
                 self.advance()
@@ -345,12 +345,13 @@ class Parser(TokenIterator):
         lhs = self.parseLogicalOperation()
 
         if self.advanceIfTokenValueIsExpected(Tokens.assign):
-            return { 'assignment': { 'left_operant': lhs, 'right_operant': self.parseExpression() }}
+            return {'assignment': {'left_operant': lhs, 'right_operant': self.parseExpression()}}
 
         if self.matchAnyOfTokenValues([Tokens.plusEquals, Tokens.minusEquals,
             Tokens.timesEquals, Tokens.devideEquals, Tokens.moduloEquals]):
+            type = self.currentTokenValue
             self.advance()
-            return { 'self_assignment': { 'left_operant': lhs, 'right_operant': self.parseExpression() }}
+            return {'self_assignment': {'type': type, 'left_operant': lhs, 'right_operant': self.parseExpression()}}
 
         return lhs
 
@@ -360,12 +361,16 @@ class Parser(TokenIterator):
 
 
 def parserTest():
-    code = '''  if (x == 3) x = 4 else x = 5\n
+    code = '''  if (x == 3) x = 4 else if (x == 4) x = 3 \n
                 outlet kick -> \'kick\' \n
                 let x = 3 \n
                 func foo (x, y) { return x + y }\n
-                x = x + 1 \n
-                [..|.|] { kick()\n print((x+2)) }
+                x += 1 \n
+                [..|.|] if (x == 3) kick(x)
+
+                '/left'->(dt) {
+                    [..|] kick()
+                }
            '''
 
     p = Parser(code)
