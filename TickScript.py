@@ -23,8 +23,8 @@ class Tokens:
     arrowRight          = '->'
     greaterThan         = '>'
     lessThan            = '<'
-    bracketOpen         = '['
-    bracketClose        = ']'
+    openBracket         = '['
+    closeBracket        = ']'
     stripe              = '|'
     arrowLeft           = '<-'
     arrowRight          = '->'
@@ -46,8 +46,8 @@ class Tokens:
     minus               = '-'
 
     operators = [comma, dot, equals, notEquals, logicalNot, logicalAnd, logicalOr, greaterThanEquals, lessThanEquals, greaterThan, lessThan,
-                 assign, colon, doubleArrow, arrowLeft, arrowRight, greaterThan, lessThan, bracketOpen,
-                 bracketClose, stripe, arrowLeft, arrowRight, endOfFile, newLine, openParentheses,
+                 assign, colon, doubleArrow, arrowLeft, arrowRight, greaterThan, lessThan, openBracket,
+                 closeBracket, stripe, arrowLeft, arrowRight, endOfFile, newLine, openParentheses,
                  closeParentheses, openBraces, closeBraces, plusEquals, minusEquals, timesEquals, devideEquals,
                  moduloEquals, times, devide, modulo, plus, minus]
 
@@ -55,14 +55,17 @@ class Tokens:
     returnKeyword       = 'return'
     funcKeyword         = 'func'
     printKeyword        = 'print'
-    controllerKeyword   = 'controller'
+    outletKeyword       = 'outlet'
     varKeyword          = 'var'
     letKeyword          = 'let'
     trueKeyword         = 'true'
     falseKeyword        = 'false'
+    ifKeyword           = 'if'
+    elseKeyword         = 'else'
 
     keywords = [wheelKeyword, returnKeyword, funcKeyword, printKeyword,
-                controllerKeyword, varKeyword, letKeyword, trueKeyword, falseKeyword]
+                outletKeyword, varKeyword, letKeyword, trueKeyword, falseKeyword,
+                ifKeyword, elseKeyword]
 
     keywordType         = 'keyword'
     identifierType      = 'identifier'
