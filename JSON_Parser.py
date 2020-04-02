@@ -134,20 +134,17 @@ class Parser(TokenIterator):
         stmt = self.parseStatement()
         conds = []
         num = len(data)
-        modOp = {'binary_operation': {'type': '%',
-                                      'left_operant':  {'unqualified_name': '__tick__'},
-                                      'right_operant': {'numeric_literal': num}}}
+        modOp = {'%': [{'unqualified_name': '__tick__'}, {'numeric_literal': num}]}
 
         for i, d in enumerate(data):
             if d == 1:
-                c = { 'equality_operation': {
-                         'type': '==', 'left_operant': modOp, 'right_operant': {'numeric_literal': i }}}
+                c = {'==': [modOp, {'numeric_literal': i}]}
                 conds.append(c)
 
         condition = conds[0]
 
         for i in range(len(conds) - 1):
-            condition = {'logical_operation': {'type': '||', 'left_operant': condition, 'right_operant': conds[i+1]}}
+            condition = {'||': [condition, conds[i+1]]}
 
         return { 'if_statement': { 'condition': condition, 'if_block': stmt, 'else_block': None }}
 
@@ -251,14 +248,14 @@ class Parser(TokenIterator):
             return { 'boolean_literal': (token == Tokens.trueKeyword) }
 
         if self.advanceIfTokenValueIsExpected(Tokens.openParentheses):
-            exp = self.parseExpression()
+            expr = self.parseExpression()
             self.advanceIfTokenValueIsExpected(Tokens.closeParentheses)
-            return exp
+            return expr
 
 
     def parseUnary(self):
         if self.advanceIfTokenValueIsExpected(Tokens.minus):
-            return { 'unary_operation': { 'type': Tokens.minus, 'right_operant': self.parseUnary() }}
+            return {'*': [{'numeric_literal': -1}, self.parseUnary()]}
 
         if self.advanceIfTokenValueIsExpected(Tokens.plus):
             return self.parseUnary()
@@ -270,11 +267,10 @@ class Parser(TokenIterator):
         lhs = self.parseUnary()
 
         while True:
-            t = self.currentTokenValue
-            if t == Tokens.times or t == Tokens.devide or t == Tokens.modulo:
+            type = self.currentTokenValue
+            if type == Tokens.times or type == Tokens.devide or type == Tokens.modulo:
                 self.advance()
-                rhs = self.parseUnary()
-                lhs = { 'binary_operation': { 'type': t, 'left_operant': lhs, 'right_operant': rhs }}
+                lhs = {type: [lhs, self.parseUnary()]}
             else:
                 break
 
@@ -285,10 +281,9 @@ class Parser(TokenIterator):
         lhs = self.parseMultiplyDevide()
 
         while True:
-            t = self.currentTokenValue
-            if t == Tokens.plus or t == Tokens.minus:
-                rhs = self.parseMultiplyDevide()
-                lhs = { 'binary_operation': { 'type': t, 'left_operant': lhs, 'right_operant': rhs }}
+            type = self.currentTokenValue
+            if type == Tokens.plus or type == Tokens.minus:
+                lhs = {type: [lhs, self.parseMultiplyDevide()]}
             else:
                 break
 
@@ -299,12 +294,11 @@ class Parser(TokenIterator):
         lhs = self.parseAdditionSubtraction()
 
         while True:
-            t = self.currentTokenValue
+            type = self.currentTokenValue
             if self.matchAnyOfTokenValues([Tokens.greaterThan, Tokens.lessThan,
                                            Tokens.greaterThanEquals, Tokens.lessThanEquals]):
                 self.advance()
-                rhs = self.parseAdditionSubtraction()
-                lhs = { 'comparison_operation': { 'type': t, 'left_operant': lhs, 'right_operant': rhs }}
+                lhs = {type: [lhs, self.parseAdditionSubtraction()]}
             else:
                 break
 
@@ -315,11 +309,10 @@ class Parser(TokenIterator):
         lhs = self.parseComparisonOperation()
 
         while True:
-            t = self.currentTokenValue
-            if t == Tokens.equals or t == Tokens.notEquals:
+            type = self.currentTokenValue
+            if type == Tokens.equals or type == Tokens.notEquals:
                 self.advance()
-                rhs = self.parseComparisonOperation()
-                lhs = { 'equality_operation': { 'type': t, 'left_operant': lhs, 'right_operant': rhs }}
+                lhs = {type: [lhs, self.parseComparisonOperation()]}
             else:
                 break
 
@@ -330,11 +323,10 @@ class Parser(TokenIterator):
         lhs = self.parseEqualityOperation()
 
         while True:
-            t = self.currentTokenValue
-            if t == Tokens.logicalAnd or t == Tokens.logicalOr:
+            type = self.currentTokenValue
+            if type == Tokens.logicalAnd or type == Tokens.logicalOr:
                 self.advance()
-                rhs = self.parseEqualityOperation()
-                lhs = { 'logical_operation': { 'type': t, 'left_operant': lhs, 'right_operant': rhs }}
+                lhs = {type: [lhs, self.parseEqualityOperation()]}
             else:
                 break
 
@@ -345,13 +337,13 @@ class Parser(TokenIterator):
         lhs = self.parseLogicalOperation()
 
         if self.advanceIfTokenValueIsExpected(Tokens.assign):
-            return {'assignment': {'left_operant': lhs, 'right_operant': self.parseExpression()}}
+            return {'=': [lhs, self.parseExpression()]}
 
         if self.matchAnyOfTokenValues([Tokens.plusEquals, Tokens.minusEquals,
             Tokens.timesEquals, Tokens.devideEquals, Tokens.moduloEquals]):
             type = self.currentTokenValue
             self.advance()
-            return {'self_assignment': {'type': type, 'left_operant': lhs, 'right_operant': self.parseExpression()}}
+            return {type: [lhs, self.parseExpression()]}
 
         return lhs
 
