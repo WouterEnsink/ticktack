@@ -13,7 +13,15 @@ class Scope:
         self.constants = {}
 
     def setValueForIdentifier(self, identifier, value):
-        self.variables[identifier] = value
+        for i in self.variables:
+            if i == identifier:
+                self.variables[i] = value
+                return
+
+        if self.parent != None:
+            return self.parent.setValueForIdentifier(identifier, value)
+
+        print(f'didn\'t find variable {identifier}')
 
     def addVariable(self, identifier, value):
         self.variables[identifier] = value
@@ -85,7 +93,6 @@ class Interpreter:
 
 
     def traverseScript(self):
-        print(json.dumps(self.tree, indent=2))
         self.traverseBlockStatement(self.tree['root']['block_statement'], self.globalScope)
 
 
@@ -105,13 +112,14 @@ class Interpreter:
         if 'function_definition' in statement:
             return self.traverseFunctionDefinition(statement['function_definition'], scope)
         if 'expression_statement' in statement:
-            return self.traverseExpression(statement['expression_statement'], scope)
+            self.traverseExpression(statement['expression_statement'], scope)
+            return Result.ok
         if 'print_statement' in statement:
             return self.traversePrintStatement(statement['print_statement'], scope)
         if 'return_statement' in statement:
-            return self.traverseReturnStatement(self, statement['return_statement'], scope)
+            return self.traverseReturnStatement( statement['return_statement'], scope)
         if 'if_statement' in statement:
-            return self.traverseIfStatement(self, statement['if_statement'], scope)
+            return self.traverseIfStatement(statement['if_statement'], scope)
 
         print(f'Interpreter Error: Unknown Statement Type')
 
@@ -131,7 +139,7 @@ class Interpreter:
         string = ''
         for i in exprs:
             string += str(i) + ', '
-        print(f'TickScript: {string}')
+        print(f'TickTack: {string}')
         return Result.ok
 
 
@@ -224,21 +232,31 @@ class Interpreter:
         fnScope = Scope(parent=parentScope)
         args = []
         for arg in node['arguments']:
-            args.append(self.traverseExpression(node['arguments'][arg], parentScope))
+            args.append(self.traverseExpression(arg, parentScope))
 
         for argID, val in zip(function['arguments'], args):
             fnScope.addVariable(argID, val)
 
-        self.traverseBlockStatement(node['body']['block_statement'], fnScope)
+        self.traverseBlockStatement(function['body']['block_statement'], fnScope)
         return fnScope.returnValue
+
+
+    def traverseAssignment(self, node, scope):
+        varID = node[0]['unqualified_name']
+        value = self.traverseExpression(node[1], scope)
+        scope.setValueForIdentifier(varID, value)
+        return value
 
 
 #---------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     path = sys.argv[1]
-    print(f'TickScript loading "{path}"')
+    print(f'TickTack: loading "{path}"')
 
     i = Interpreter()
-    i.openSyntaxTree(path)
-    i.traverseScript()
+    try:
+        i.openSyntaxTree(path)
+        i.traverseScript()
+    except Exception as error:
+        print(f'TickTack Interpreter Error: {error}')

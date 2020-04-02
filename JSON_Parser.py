@@ -191,7 +191,7 @@ class Parser(TokenIterator):
             arguments = []
 
         while self.currentTokenValue != Tokens.closeParentheses and self.currentTokenValue != Tokens.endOfFile:
-            self.consumeValue(Tokens.comma, 'Expected "," between function arguments')
+            self.consumeValue(Tokens.comma, 'Expected "," between function arguments or ")" to close it off')
             arguments.append(self.currentTokenValue)
             self.consumeType(Tokens.identifierType, 'Expected identifier in function arguments')
 
@@ -205,7 +205,7 @@ class Parser(TokenIterator):
         args = [self.parseExpression()] if self.currentTokenValue != Tokens.closeParentheses else []
 
         while self.currentTokenValue != Tokens.closeParentheses:
-             self.consumeValue(Tokens.comma, 'Expected "," between function arguments')
+             self.consumeValue(Tokens.comma, 'Expected "," between function arguments or ")" to close it off')
              args.append(self.parseExpression())
 
         self.advance()
@@ -260,7 +260,7 @@ class Parser(TokenIterator):
 
     def parseUnary(self):
         if self.advanceIfTokenValueIsExpected(Tokens.minus):
-            return {'*': [{'numeric_literal': -1}, self.parseUnary()]}
+            return self.parseUnary()
 
         if self.advanceIfTokenValueIsExpected(Tokens.plus):
             return self.parseUnary()
