@@ -15,12 +15,10 @@ class Parser(TokenIterator):
         self.advance()
 
 
-
     def consumeValue(self, value, errorMessage):
         if self.currentTokenValue != value:
             self.throwLocationError(errorMessage)
         self.advance()
-
 
 
     def parse(self):
@@ -62,6 +60,9 @@ class Parser(TokenIterator):
         while self.currentTokenValue == Tokens.newLine:
             self.advance()
 
+        if self.advanceIfTokenValueIsExpected(Tokens.outletKeyword):
+            return self.parseOutletDeclaration()
+
         if self.currentTokenType == Tokens.identifierType or self.currentTokenType == Tokens.numericLiteralType:
             return { 'expression_statement': self.parseExpression() }
 
@@ -77,10 +78,94 @@ class Parser(TokenIterator):
         if self.advanceIfTokenValueIsExpected(Tokens.funcKeyword):
             return { 'function_definition': self.parseFunctionDefinition() }
 
+        if self.advanceIfTokenValueIsExpected(Tokens.ifKeyword):
+            return { 'if_statement': self.parseIfStatement() }
+
         if self.currentTokenValue == Tokens.openBraces:
             return self.parseBlockStatement()
 
+        if self.currentTokenType == Tokens.stringLiteralType:
+            return { 'osc_callback_definition': self.parseCallbackDefinition() }
+
+        if self.advanceIfTokenValueIsExpected(Tokens.openBracket):
+            return { 'tick_statement': self.parseTickStatement() }
+
         return { 'empty_statement': None }
+
+
+    def parseCallbackDefinition(self):
+        address = self.currentTokenValue
+        self.advance()
+        self.consumeValue(Tokens.arrowRight, 'Expected "->" after address in OSC callback')
+        self.consumeValue(Tokens.openParentheses, 'Expected "(" after "->" in OSC callback')
+        argumentList = []
+
+        if self.currentTokenValue != Tokens.closeParentheses:
+            argumentList.append(self.currentTokenValue)
+            self.consumeType(Tokens.identifierType, 'Expected identifier in argument list')
+
+        while self.currentTokenValue != Tokens.closeParentheses and self.currentTokenValue != Tokens.endOfFile:
+            self.consumeValue(Tokens.comma, 'Expected "," in argument list')
+            argumentList.append(self.currentTokenValue)
+            self.consumeType(Tokens.identifierType, 'Expected identifier in argument list')
+
+        block = self.parseBlockStatement()
+        return { 'address': address, 'argumentList': argumentList, 'body': block }
+
+
+    def parseTickStatement(self):
+        data = []
+        while self.currentTokenValue == Tokens.stripe or self.currentTokenValue == Tokens.dot:
+            data.append(1 if self.currentTokenValue == Tokens.stripe else 0)
+            self.advance()
+
+        self.consumeValue(Tokens.closeBracket, 'Expected "]" to close tick statement')
+
+        stmt = self.parseStatement()
+        conds = []
+        num = len(data)
+        modOp = {'binary_operation': {'type': '%',
+                                      'left_operant':  {'unqualified_name': '__tick__'},
+                                      'right_operant': {'numeric_literal': num}}}
+
+        for i, d in enumerate(data):
+            if d == 1:
+                c = { 'equality_operation': {
+                         'type': '==', 'left_operant': modOp, 'right_operant': {'numeric_literal': i }}}
+                print(f'{i}) {c}')
+                conds.append(c)
+
+        condition = conds[0]
+
+        for i in range(len(conds) - 1):
+            condition = {'logical_operation': {'type': '||', 'left_operant': condition, 'right_operant': conds[i+1]}}
+
+        return { 'if_statement': { 'condition': condition, 'if_block': stmt, 'else_block': None }}
+
+
+    def parseOutletDeclaration(self):
+        identifier = self.currentTokenValue
+        self.consumeType(Tokens.identifierType, 'Expected identifier after "outlet"')
+        self.consumeValue(Tokens.arrowRight, 'Expected "->" after identifier in outlet declaration')
+        address = self.currentTokenValue
+        self.consumeType(Tokens.stringLiteralType, 'Expected address after "->" in outlet declaration')
+        return { 'outlet_declaration': { 'identifier': identifier, 'address': address }}
+
+
+    def parseIfStatement(self):
+        self.consumeValue(Tokens.openParentheses, 'Expected "(" after "if"')
+        condition = self.parseExpression()
+        self.consumeValue(Tokens.closeParentheses, 'Expected ")" after expression in if statement')
+        ifBlock = self.parseStatement()
+
+        while self.currentTokenValue == Tokens.newLine:
+            self.advance()
+
+        elseBlock = None
+        if self.advanceIfTokenValueIsExpected(Tokens.elseKeyword):
+            elseBlock = self.parseStatement()
+
+        return { 'condition': condition, 'if_block': ifBlock, 'else_block': elseBlock }
 
 
     def parseFunctionDefinition(self):
@@ -98,7 +183,6 @@ class Parser(TokenIterator):
             self.consumeValue(Tokens.comma, 'Expected "," between function arguments')
             arguments.append(self.currentTokenValue)
             self.consumeType(Tokens.identifierType, 'Expected identifier in function arguments')
-
 
         self.consumeValue(Tokens.closeParentheses, 'Expected ")" to close off function arguments')
         block = self.parseBlockStatement()
@@ -127,6 +211,7 @@ class Parser(TokenIterator):
         self.consumeValue(Tokens.assign, 'Expected "=" for variable declaration')
 
         expr = self.parseExpression()
+
         if expr == None:
             self.throwLocationError('Expected expression after "=" in variable declaration')
 
@@ -154,7 +239,7 @@ class Parser(TokenIterator):
 
         if token == Tokens.trueKeyword or token == Tokens.falseKeyword:
             self.advance()
-            return { 'boolean_literal': (True if token == Tokens.trueKeyword else False) }
+            return { 'boolean_literal': (token == Tokens.trueKeyword) }
 
         if self.advanceIfTokenValueIsExpected(Tokens.openParentheses):
             exp = self.parseExpression()
@@ -260,11 +345,19 @@ class Parser(TokenIterator):
 
         return lhs
 
+
+
 #==================================================================================
 
 
 def parserTest():
-    code = 'let x = 3 \n func foo (x, y) { return x + y }\n x = x + 1'
+    code = '''  if (x == 3) x = 4 else x = 5\n
+                outlet kick -> \'kick\' \n
+                let x = 3 \n
+                func foo (x, y) { return x + y }\n
+                x = x + 1 \n
+                [..|.|] kick()
+           '''
 
     p = Parser(code)
 
