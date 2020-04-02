@@ -84,13 +84,23 @@ class Parser(TokenIterator):
         if self.currentTokenValue == Tokens.openBraces:
             return self.parseBlockStatement()
 
+        if self.advanceIfTokenValueIsExpected(Tokens.printKeyword):
+            return self.parsePrintStatement()
+
         if self.currentTokenType == Tokens.stringLiteralType:
             return { 'osc_callback_definition': self.parseCallbackDefinition() }
 
         if self.advanceIfTokenValueIsExpected(Tokens.openBracket):
-            return { 'tick_statement': self.parseTickStatement() }
+            return self.parseTickStatement()
 
         return { 'empty_statement': None }
+
+
+    def parsePrintStatement(self):
+        self.consumeValue(Tokens.openParentheses, 'Expected "(" after "print"')
+        expr = self.parseExpression()
+        self.consumeValue(Tokens.closeParentheses, 'Expected ")" to close off print statement')
+        return {'print_statement': expr}
 
 
     def parseCallbackDefinition(self):
@@ -132,7 +142,6 @@ class Parser(TokenIterator):
             if d == 1:
                 c = { 'equality_operation': {
                          'type': '==', 'left_operant': modOp, 'right_operant': {'numeric_literal': i }}}
-                print(f'{i}) {c}')
                 conds.append(c)
 
         condition = conds[0]
@@ -356,7 +365,7 @@ def parserTest():
                 let x = 3 \n
                 func foo (x, y) { return x + y }\n
                 x = x + 1 \n
-                [..|.|] kick()
+                [..|.|] { kick()\n print((x+2)) }
            '''
 
     p = Parser(code)
