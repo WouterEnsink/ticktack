@@ -13,10 +13,13 @@ class Scope:
         self.constants = {}
 
     def setValueForIdentifier(self, identifier, value):
-        for i in self.variables:
-            if i == identifier:
-                self.variables[i] = value
-                return
+        if identifier in self.variables:
+            self.variables[identifier] = value
+            return
+
+        if identifier in self.constants:
+            print(f'Error: trying to assign value to constant {identifier}')
+            return
 
         if self.parent != None:
             return self.parent.setValueForIdentifier(identifier, value)
