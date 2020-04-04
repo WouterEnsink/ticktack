@@ -1,6 +1,6 @@
 # TickTack Interpreter
 
-from JSON_Parser import Parser
+from TickTack_Parser import Parser
 import json, sys
 
 

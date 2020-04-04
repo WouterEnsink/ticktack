@@ -89,18 +89,6 @@
         }
       },
       {
-        "expression_statement": {
-          "=": [
-            {
-              "unqualified_name": "x"
-            },
-            {
-              "numeric_literal": 2.0
-            }
-          ]
-        }
-      },
-      {
         "print_statement": [
           {
             "unqualified_name": "x"
@@ -235,6 +223,96 @@
               "arguments": [
                 {
                   "numeric_literal": 9.0
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "print_statement": [
+          {
+            "-": [
+              {
+                "numeric_literal": 0.0
+              },
+              {
+                "numeric_literal": 1.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "function_definition": {
+          "identifier": "factorial",
+          "arguments": [
+            "n"
+          ],
+          "body": {
+            "block_statement": [
+              {
+                "if_statement": {
+                  "condition": {
+                    "==": [
+                      {
+                        "unqualified_name": "n"
+                      },
+                      {
+                        "numeric_literal": 0.0
+                      }
+                    ]
+                  },
+                  "if_block": {
+                    "return_statement": {
+                      "expression": {
+                        "numeric_literal": 1.0
+                      }
+                    }
+                  },
+                  "else_block": null
+                }
+              },
+              {
+                "return_statement": {
+                  "expression": {
+                    "*": [
+                      {
+                        "unqualified_name": "n"
+                      },
+                      {
+                        "function_call": {
+                          "identifier": "factorial",
+                          "arguments": [
+                            {
+                              "-": [
+                                {
+                                  "unqualified_name": "n"
+                                },
+                                {
+                                  "numeric_literal": 1.0
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "print_statement": [
+          {
+            "function_call": {
+              "identifier": "factorial",
+              "arguments": [
+                {
+                  "numeric_literal": 10.0
                 }
               ]
             }

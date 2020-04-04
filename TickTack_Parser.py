@@ -1,7 +1,7 @@
-# TickTack to JSON Parser
+# TickTack Parser
 
 
-from TickScript import Tokens, TokenIterator
+from TickTack_Lexer import Tokens, TokenIterator
 import json
 import sys
 
@@ -97,13 +97,13 @@ class Parser(TokenIterator):
 
 
     def parsePrintStatement(self):
-        self.consumeValue(Tokens.openParentheses, 'Expected "(" after "print"')
+        self.consumeValue(Tokens.openParenthesis, 'Expected "(" after "print"')
         exprs = [self.parseExpression()]
-        while self.currentTokenValue != Tokens.closeParentheses and self.currentTokenValue != Tokens.endOfFile:
+        while self.currentTokenValue != Tokens.closeParenthesis and self.currentTokenValue != Tokens.endOfFile:
             self.consumeValue(Tokens.comma, 'Expected "," or ")" after expression in print statement')
             exprs.append(self.parseExpression())
 
-        self.consumeValue(Tokens.closeParentheses, 'Expected ")" to close off print statement')
+        self.consumeValue(Tokens.closeParenthesis, 'Expected ")" to close off print statement')
 
         return {'print_statement': exprs}
 
@@ -112,14 +112,14 @@ class Parser(TokenIterator):
         address = self.currentTokenValue
         self.advance()
         self.consumeValue(Tokens.arrowRight, 'Expected "->" after address in OSC callback')
-        self.consumeValue(Tokens.openParentheses, 'Expected "(" after "->" in OSC callback')
+        self.consumeValue(Tokens.openParenthesis, 'Expected "(" after "->" in OSC callback')
         argumentList = []
 
-        if self.currentTokenValue != Tokens.closeParentheses:
+        if self.currentTokenValue != Tokens.closeParenthesis:
             argumentList.append(self.currentTokenValue)
             self.consumeType(Tokens.identifierType, 'Expected identifier in argument list')
 
-        while self.currentTokenValue != Tokens.closeParentheses and self.currentTokenValue != Tokens.endOfFile:
+        while self.currentTokenValue != Tokens.closeParenthesis and self.currentTokenValue != Tokens.endOfFile:
             self.consumeValue(Tokens.comma, 'Expected "," in argument list')
             argumentList.append(self.currentTokenValue)
             self.consumeType(Tokens.identifierType, 'Expected identifier in argument list')
@@ -164,9 +164,9 @@ class Parser(TokenIterator):
 
 
     def parseIfStatement(self):
-        self.consumeValue(Tokens.openParentheses, 'Expected "(" after "if"')
+        self.consumeValue(Tokens.openParenthesis, 'Expected "(" after "if"')
         condition = self.parseExpression()
-        self.consumeValue(Tokens.closeParentheses, 'Expected ")" after expression in if statement')
+        self.consumeValue(Tokens.closeParenthesis, 'Expected ")" after expression in if statement')
         ifBlock = self.parseStatement()
 
         while self.currentTokenValue == Tokens.newLine:
@@ -182,7 +182,7 @@ class Parser(TokenIterator):
     def parseFunctionDefinition(self):
         identifier = self.currentTokenValue
         self.consumeType(Tokens.identifierType, 'Expected identifier after "func"')
-        self.consumeValue(Tokens.openParentheses, 'Expected "(" after identifier in function declaration')
+        self.consumeValue(Tokens.openParenthesis, 'Expected "(" after identifier in function declaration')
 
         if self.currentTokenType == Tokens.identifierType:
             arguments = [self.currentTokenValue]
@@ -190,21 +190,21 @@ class Parser(TokenIterator):
         else:
             arguments = []
 
-        while self.currentTokenValue != Tokens.closeParentheses and self.currentTokenValue != Tokens.endOfFile:
+        while self.currentTokenValue != Tokens.closeParenthesis and self.currentTokenValue != Tokens.endOfFile:
             self.consumeValue(Tokens.comma, 'Expected "," between function arguments or ")" to close it off')
             arguments.append(self.currentTokenValue)
             self.consumeType(Tokens.identifierType, 'Expected identifier in function arguments')
 
-        self.consumeValue(Tokens.closeParentheses, 'Expected ")" to close off function arguments')
+        self.consumeValue(Tokens.closeParenthesis, 'Expected ")" to close off function arguments')
         block = self.parseBlockStatement()
 
         return {'identifier': identifier, 'arguments': arguments, 'body': block}
 
 
     def parseFunctionCall(self, identifier):
-        args = [self.parseExpression()] if self.currentTokenValue != Tokens.closeParentheses else []
+        args = [self.parseExpression()] if self.currentTokenValue != Tokens.closeParenthesis else []
 
-        while self.currentTokenValue != Tokens.closeParentheses:
+        while self.currentTokenValue != Tokens.closeParenthesis:
              self.consumeValue(Tokens.comma, 'Expected "," between function arguments or ")" to close it off')
              args.append(self.parseExpression())
 
@@ -230,7 +230,7 @@ class Parser(TokenIterator):
 
 
     def parseSuffix(self, identifier):
-        if self.advanceIfTokenValueIsExpected(Tokens.openParentheses):
+        if self.advanceIfTokenValueIsExpected(Tokens.openParenthesis):
             return self.parseFunctionCall(identifier)
 
         if self.advanceIfTokenValueIsExpected(Tokens.dot):
@@ -252,9 +252,9 @@ class Parser(TokenIterator):
             self.advance()
             return {'boolean_literal': (token == Tokens.trueKeyword)}
 
-        if self.advanceIfTokenValueIsExpected(Tokens.openParentheses):
+        if self.advanceIfTokenValueIsExpected(Tokens.openParenthesis):
             expr = self.parseExpression()
-            self.advanceIfTokenValueIsExpected(Tokens.closeParentheses)
+            self.advanceIfTokenValueIsExpected(Tokens.closeParenthesis)
             return expr
 
 

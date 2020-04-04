@@ -11,9 +11,7 @@ func pow (base, exp)
 
 let x = pow (3, 4)
 
-x = 2
-
-print (x)       // should print 81
+print (x)       // should print 81.0
 
 // ===========================================
 
@@ -27,4 +25,16 @@ func fib (n)
     return fib (n - 1) + fib (n - 2)
 }
 
-print (fib (9))     // should print 21
+print (fib (9))     // should print 21.0
+
+print (0-1)  // bug in ticktack: unary does not yet work
+
+func factorial (n)
+{
+    if (n == 0)
+        return 1
+
+    return n * factorial (n-1)
+}
+
+print (factorial (10))
