@@ -256,3 +256,19 @@ operator:       ')'
         },
     ]
 }
+
+//===============================================
+
+
+
+-> Kick: 'kick'
+{
+    -> play: 'play'
+    -> eq: 'eq' {
+        -> hi: 'hi'
+    }
+}
+
+controller Kick: 'kick' {
+    play: 'play'
+}

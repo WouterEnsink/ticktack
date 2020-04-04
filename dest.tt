@@ -1,0 +1,246 @@
+{
+  "language": "TickTack",
+  "version": "0.1b",
+  "root": {
+    "block_statement": [
+      {
+        "function_definition": {
+          "identifier": "pow",
+          "arguments": [
+            "base",
+            "exp"
+          ],
+          "body": {
+            "block_statement": [
+              {
+                "if_statement": {
+                  "condition": {
+                    "==": [
+                      {
+                        "unqualified_name": "exp"
+                      },
+                      {
+                        "numeric_literal": 1.0
+                      }
+                    ]
+                  },
+                  "if_block": {
+                    "return_statement": {
+                      "expression": {
+                        "unqualified_name": "base"
+                      }
+                    }
+                  },
+                  "else_block": null
+                }
+              },
+              {
+                "return_statement": {
+                  "expression": {
+                    "*": [
+                      {
+                        "unqualified_name": "base"
+                      },
+                      {
+                        "function_call": {
+                          "identifier": "pow",
+                          "arguments": [
+                            {
+                              "unqualified_name": "base"
+                            },
+                            {
+                              "-": [
+                                {
+                                  "unqualified_name": "exp"
+                                },
+                                {
+                                  "numeric_literal": 1.0
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "variable_declaration": {
+          "identifier": "x",
+          "constant": true,
+          "expression": {
+            "function_call": {
+              "identifier": "pow",
+              "arguments": [
+                {
+                  "numeric_literal": 3.0
+                },
+                {
+                  "numeric_literal": 4.0
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "expression_statement": {
+          "=": [
+            {
+              "unqualified_name": "x"
+            },
+            {
+              "numeric_literal": 2.0
+            }
+          ]
+        }
+      },
+      {
+        "print_statement": [
+          {
+            "unqualified_name": "x"
+          }
+        ]
+      },
+      {
+        "function_definition": {
+          "identifier": "fib",
+          "arguments": [
+            "n"
+          ],
+          "body": {
+            "block_statement": [
+              {
+                "if_statement": {
+                  "condition": {
+                    "<=": [
+                      {
+                        "unqualified_name": "n"
+                      },
+                      {
+                        "numeric_literal": 0.0
+                      }
+                    ]
+                  },
+                  "if_block": {
+                    "return_statement": {
+                      "expression": {
+                        "numeric_literal": 1.0
+                      }
+                    }
+                  },
+                  "else_block": null
+                }
+              },
+              {
+                "if_statement": {
+                  "condition": {
+                    "==": [
+                      {
+                        "unqualified_name": "n"
+                      },
+                      {
+                        "numeric_literal": 1.0
+                      }
+                    ]
+                  },
+                  "if_block": {
+                    "return_statement": {
+                      "expression": {
+                        "numeric_literal": 0.0
+                      }
+                    }
+                  },
+                  "else_block": null
+                }
+              },
+              {
+                "if_statement": {
+                  "condition": {
+                    "==": [
+                      {
+                        "unqualified_name": "n"
+                      },
+                      {
+                        "numeric_literal": 2.0
+                      }
+                    ]
+                  },
+                  "if_block": {
+                    "return_statement": {
+                      "expression": {
+                        "numeric_literal": 1.0
+                      }
+                    }
+                  },
+                  "else_block": null
+                }
+              },
+              {
+                "return_statement": {
+                  "expression": {
+                    "+": [
+                      {
+                        "function_call": {
+                          "identifier": "fib",
+                          "arguments": [
+                            {
+                              "-": [
+                                {
+                                  "unqualified_name": "n"
+                                },
+                                {
+                                  "numeric_literal": 1.0
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "function_call": {
+                          "identifier": "fib",
+                          "arguments": [
+                            {
+                              "-": [
+                                {
+                                  "unqualified_name": "n"
+                                },
+                                {
+                                  "numeric_literal": 2.0
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "print_statement": [
+          {
+            "function_call": {
+              "identifier": "fib",
+              "arguments": [
+                {
+                  "numeric_literal": 9.0
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

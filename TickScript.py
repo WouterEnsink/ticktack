@@ -141,7 +141,7 @@ class TokenIterator(CodeLocation):
         return False
 
     def skipWhiteSpaceAndComments(self):
-        while self.index < len(self.code) and self.code[self.index] == ' ':
+        while self.index < len(self.code) and (self.code[self.index] == ' ' or self.code[self.index] == '\t'):
             self.index += 1
 
         if self.code[self.index : self.index + 2] == '//':
@@ -158,7 +158,7 @@ class TokenIterator(CodeLocation):
                     break
             self.index += 2
 
-        while self.index < len(self.code) and self.code[self.index] == ' ':
+        while self.index < len(self.code) and (self.code[self.index] == ' ' or self.code[self.index] == '\t'):
             self.index += 1
 
     def matchNextToken(self):
