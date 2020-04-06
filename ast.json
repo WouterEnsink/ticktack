@@ -318,6 +318,47 @@
             }
           }
         ]
+      },
+      {
+        "print_statement": [
+          {
+            "-": [
+              {
+                "+": [
+                  {
+                    "numeric_literal": 8.0
+                  },
+                  {
+                    "/": [
+                      {
+                        "numeric_literal": 4.0
+                      },
+                      {
+                        "numeric_literal": 3.0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "*": [
+                  {
+                    "numeric_literal": 3.0
+                  },
+                  {
+                    "numeric_literal": 5.0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numeric_literal": 50.0
+          },
+          {
+            "numeric_literal": 100.0
+          }
+        ]
       }
     ]
   }

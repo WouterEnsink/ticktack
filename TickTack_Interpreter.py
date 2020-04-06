@@ -18,13 +18,13 @@ class Scope:
             return
 
         if identifier in self.constants:
-            print(f'Error: trying to assign value to constant {identifier}')
+            print(f'Error: trying to assign value to constant "{identifier}"')
             return
 
         if self.parent != None:
             return self.parent.setValueForIdentifier(identifier, value)
 
-        print(f'didn\'t find variable {identifier}')
+        print(f'didn\'t find variable "{identifier}"')
 
     def addVariable(self, identifier, value):
         self.variables[identifier] = value
@@ -53,27 +53,26 @@ class Scope:
         callback.body.perform(functionScope)
 
     def lookUpFunction(self, identifier):
-        for i, f in self.functionDefinitions.items():
-            if i == identifier:
-                return f
+        if identifier in self.functionDefinitions:
+            return self.functionDefinitions[identifier]
+
         if self.parent != None:
             return self.parent.lookUpFunction(identifier)
 
-        print(f'did not find function {identifier}, there were a total of {len(self.functionDefinitions)}')
+        print(f'did not find function "{identifier}", there were a total of {len(self.functionDefinitions)}')
         return None
 
     def lookUpVariable(self, identifier):
-        for i, v in self.variables.items():
-            if i == identifier:
-                return v
-        for i, v in self.constants.items():
-            if i == identifier:
-                return v
+        if identifier in self.variables:
+            return self.variables[identifier]
+
+        if identifier in self.constants:
+            return self.constants[identifier]
 
         if self.parent != None:
             return self.parent.lookUpVariable(identifier)
 
-        print(f'Error: variable with name {identifier} does not exist')
+        print(f'Error: variable "{identifier}" does not exist')
         return None
 
     def setReturnValue(self, newValue):
@@ -138,11 +137,8 @@ class Interpreter:
 
 
     def traversePrintStatement(self, node, scope):
-        exprs = [self.traverseExpression(i, scope) for i in node]
-        string = ''
-        for i in exprs:
-            string += str(i) + ', '
-        print(f'TickTack: {string}')
+        exprs = ', '.join([str(self.traverseExpression(i, scope)) for i in node])
+        print(f'TickTack: {exprs}')
         return Result.ok
 
 
@@ -165,9 +161,9 @@ class Interpreter:
 
 
     def traverseVariableDeclaration(self, node, scope):
-        identifier = node['identifier']
+        identifier, constant = node['identifier'], node['constant']
         expression = self.traverseExpression(node['expression'], scope)
-        constant   = node['constant']
+
         if constant:
             scope.addConstant(identifier, expression)
         else:
@@ -233,9 +229,7 @@ class Interpreter:
     def traverseFunctionCall(self, node, parentScope):
         function = parentScope.lookUpFunction(node['identifier'])
         fnScope = Scope(parent=parentScope)
-        args = []
-        for arg in node['arguments']:
-            args.append(self.traverseExpression(arg, parentScope))
+        args = [self.traverseExpression(arg, parentScope) for arg in node['arguments']]
 
         for argID, val in zip(function['arguments'], args):
             fnScope.addVariable(argID, val)

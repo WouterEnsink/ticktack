@@ -254,7 +254,7 @@ class Parser(TokenIterator):
 
         if self.advanceIfTokenValueIsExpected(Tokens.openParenthesis):
             expr = self.parseExpression()
-            self.advanceIfTokenValueIsExpected(Tokens.closeParenthesis)
+            self.consumeValue(Tokens.closeParenthesis, 'Expected ")" to match "("')
             return expr
 
 
@@ -288,6 +288,7 @@ class Parser(TokenIterator):
         while True:
             type = self.currentTokenValue
             if type == Tokens.plus or type == Tokens.minus:
+                self.advance()
                 lhs = {type: [lhs, self.parseMultiplyDevide()]}
             else:
                 break

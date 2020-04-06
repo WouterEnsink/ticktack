@@ -38,3 +38,6 @@ func factorial (n)
 }
 
 print (factorial (10))
+
+
+print (8+4/3-3*5, 50, 100)
