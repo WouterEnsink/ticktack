@@ -93,6 +93,10 @@ class Parser(TokenIterator):
         if self.advanceIfTokenValueIsExpected(Tokens.openBracket):
             return self.parseTickStatement()
 
+        if self.advanceIfTokenValueIsExpected(Tokens.outletKeyword):
+            return {'outlet_declaration': self.parseOutletDeclaration()}
+
+        self.advance()
         return {'empty_statement': None}
 
 

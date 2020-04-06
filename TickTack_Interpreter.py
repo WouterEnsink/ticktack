@@ -41,16 +41,17 @@ class Scope:
     def addOpenSoundControlCallback(self, adress, callback):
         self.oscCallbacks[adress] = callback
 
-    def invokeOpenSoundControlCallback(self, adress, args):
-        callback = self.oscCallbacks[adress]
-        argIds = callback.args
+    def isOutlet(self, identifier):
+        return identifier in self.outlets
 
-        functionScope = Scope(parent=self)
 
-        for index, identifier in enumerate(argIds):
-            functionScope.setValueForIdentifier(identifier, args)
+    def lookUpCallback(self, address):
+        if address in self.oscCallbacks:
+            return self.oscCallbacks[address]
 
-        callback.body.perform(functionScope)
+        print(f'Error: did not find OSC callback "{address}"')
+        return None
+
 
     def lookUpFunction(self, identifier):
         if identifier in self.functionDefinitions:
@@ -79,6 +80,8 @@ class Scope:
         self.returnValue = newValue
 
 
+
+
 class Result:
     ok, returnWasHit = 0, 1
 
@@ -92,6 +95,18 @@ class Interpreter:
     def openSyntaxTree(self, path):
         with open(path, 'r') as file:
             self.tree = json.load(file)
+
+
+    def invokeOpenSoundControlCallback(self, address, arguments):
+        callback = self.globalScope.lookUpCallback(address)
+        if callback == None:
+            return
+
+        fnScope = Scope(parent=self.globalScope)
+        if len(arguments) > 0:
+            fnScope.addConstant('__tick__', arguments[0])
+
+        self.traverseBlockStatement(callback['body']['block_statement'], fnScope)
 
 
     def traverseScript(self):
@@ -122,8 +137,22 @@ class Interpreter:
             return self.traverseReturnStatement( statement['return_statement'], scope)
         if 'if_statement' in statement:
             return self.traverseIfStatement(statement['if_statement'], scope)
+        if 'osc_callback_definition' in statement:
+            return self.traverseOSC_CallbackDefinition(statement['osc_callback_definition'], scope)
+        if 'outlet_declaration' in statement:
+            return self.traverseOutletDeclaration(statement['outlet_declaration'], scope)
 
         print(f'Interpreter Error: Unknown Statement Type')
+
+
+    def traverseOutletDeclaration(self, node, scope):
+        scope.outlets[node['identifier']] = node['address']
+        return Result.ok
+
+
+    def traverseOSC_CallbackDefinition(self, node, scope):
+        scope.addOpenSoundControlCallback(node['address'], node)
+        return Result.ok
 
 
     def traverseFunctionDefinition(self, node, scope):
@@ -227,10 +256,14 @@ class Interpreter:
 
 
     def traverseFunctionCall(self, node, parentScope):
+
+        args = [self.traverseExpression(arg, parentScope) for arg in node['arguments']]
+        if parentScope.isOutlet(node['identifier']):
+            self.sendDataToOutlet(parentScope.outlets[node['identifier']], args)
+            return
+
         function = parentScope.lookUpFunction(node['identifier'])
         fnScope = Scope(parent=parentScope)
-        args = [self.traverseExpression(arg, parentScope) for arg in node['arguments']]
-
         for argID, val in zip(function['arguments'], args):
             fnScope.addVariable(argID, val)
 
@@ -245,6 +278,11 @@ class Interpreter:
         return value
 
 
+    # meant to be overridden by subclass
+    def sendDataToOutlet(self, outlet, data):
+        print(f'sending data to "{outlet}": {data}')
+
+
 #---------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -255,5 +293,6 @@ if __name__ == '__main__':
     try:
         i.openSyntaxTree(path)
         i.traverseScript()
+        i.invokeOpenSoundControlCallback('/kick', [10])
     except Exception as error:
         print(f'TickTack Interpreter Error: {error}')
