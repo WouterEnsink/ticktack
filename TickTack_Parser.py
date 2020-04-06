@@ -264,7 +264,7 @@ class Parser(TokenIterator):
 
     def parseUnary(self):
         if self.advanceIfTokenValueIsExpected(Tokens.minus):
-            return self.parseUnary()
+            return {'*': [{'numeric_literal': -1.0}, self.parseUnary()]}
 
         if self.advanceIfTokenValueIsExpected(Tokens.plus):
             return self.parseUnary()

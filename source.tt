@@ -1,52 +1,27 @@
 
-// example TickTack script
+/** Example TickTack script */
 
-func pow (base, exp)
+
+var cutoffVal = 500     // hz
+var delta     = 100     // hz
+
+func getAndUpdateCutoff()
 {
-    if (exp == 1)
-        return base
+    cutoffVal += delta
 
-    return base * pow (base, exp - 1)
+    if (cutoffVal <= 200 || cutoffVal >= 1000)
+        delta *= -1
+
+    return cutoffVal
 }
 
-let x = pow (3, 4)
+var count = 0
 
-print (x)       // should print 81.0
+outlet cutoff -> '/cutoff'
+outlet note   -> '/note'
 
-// ===========================================
-
-// simple fibonacci generator
-func fib (n)
+'/tick' -> ()
 {
-    if (n <= 0) return -1
-    if (n == 1) return 0
-    if (n == 2) return 1
-
-    return fib (n - 1) + fib (n - 2)
+    [|...] cutoff (getAndUpdateCutoff())
+    [|.] note (count += 1)
 }
-
-print (fib (9))     // should print 21.0
-
-print (0-1)  // bug in ticktack: unary does not yet work
-
-func factorial (n)
-{
-    if (n == 0)
-        return 1
-
-    return n * factorial (n-1)
-}
-
-print (factorial (10))
-
-// OSC callback with adress '/kick'
-
-'/kick' -> () {
-    [....|] print(5)
-
-    print(1)
-}
-
-outlet snare -> '/snare'
-
-snare(1.0)

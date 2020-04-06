@@ -6,11 +6,13 @@ import json, sys
 
 
 class Scope:
+
     def __init__(self, parent=None):
         self.parent, self.variables, self.functionDefinitions, self.oscCallbacks = parent, {}, {}, {}
         self.returnValue = '[undifined]'
         self.outlets = {}
         self.constants = {}
+
 
     def setValueForIdentifier(self, identifier, value):
         if identifier in self.variables:
@@ -26,23 +28,35 @@ class Scope:
 
         print(f'didn\'t find variable "{identifier}"')
 
+
     def addVariable(self, identifier, value):
         self.variables[identifier] = value
+
 
     def addConstant(self, identifier, value):
         self.constants[identifier] = value
 
+
     def addFunctionDefinition(self, identifier, functionDefinition):
         self.functionDefinitions[identifier] = functionDefinition
+
 
     def addOutlet(self, identifier, address):
         self.outlet[identifier] = address
 
+
     def addOpenSoundControlCallback(self, adress, callback):
         self.oscCallbacks[adress] = callback
 
-    def isOutlet(self, identifier):
-        return identifier in self.outlets
+
+    def lookUpOutlet(self, identifier):
+        if identifier in self.outlets:
+            return self.outlets[identifier]
+
+        if self.parent != None:
+            return self.parent.lookUpOutlet(identifier)
+
+        return None
 
 
     def lookUpCallback(self, address):
@@ -63,6 +77,7 @@ class Scope:
         print(f'did not find function "{identifier}", there were a total of {len(self.functionDefinitions)}')
         return None
 
+
     def lookUpVariable(self, identifier):
         if identifier in self.variables:
             return self.variables[identifier]
@@ -75,6 +90,7 @@ class Scope:
 
         print(f'Error: variable "{identifier}" does not exist')
         return None
+
 
     def setReturnValue(self, newValue):
         self.returnValue = newValue
@@ -207,7 +223,7 @@ class Interpreter:
 
         for o in ['+=', '-=', '*=', '/=', '%=']:
             if o in expression:
-                return self.traverseSelfAssignment(self, o, expression[o], scope)
+                return self.traverseSelfAssignment(o, expression[o], scope)
 
         for o in ['+', '-', '*', '/', '%', '==', '&&', '||', '!=', '>', '<', '>=', '<=']:
             if o in expression:
@@ -225,19 +241,19 @@ class Interpreter:
 
     def traverseBinary(self, type, node, scope):
         lhs, rhs = self.traverseExpression(node[0], scope), self.traverseExpression(node[1], scope)
-        if type == '+':  return lhs + rhs
-        if type == '-':  return lhs - rhs
-        if type == '*':  return lhs * rhs
-        if type == '/':  return lhs / rhs
-        if type == '%':  return lhs % rhs
-        if type == '==': return lhs == rhs
-        if type == '!=': return lhs != rhs
+        if type == '+':  return lhs +   rhs
+        if type == '-':  return lhs -   rhs
+        if type == '*':  return lhs *   rhs
+        if type == '/':  return lhs /   rhs
+        if type == '%':  return lhs %   rhs
+        if type == '==': return lhs ==  rhs
+        if type == '!=': return lhs !=  rhs
         if type == '&&': return lhs and rhs
-        if type == '||': return lhs or rhs
-        if type == '>=': return lhs >= rhs
-        if type == '>':  return lhs > rhs
-        if type == '<=': return lhs <= rhs
-        if type == '<':  return lhs < rhs
+        if type == '||': return lhs or  rhs
+        if type == '>=': return lhs >=  rhs
+        if type == '>':  return lhs >   rhs
+        if type == '<=': return lhs <=  rhs
+        if type == '<':  return lhs <   rhs
 
 
     def traverseSelfAssignment(self, type, node, scope):
@@ -258,11 +274,13 @@ class Interpreter:
     def traverseFunctionCall(self, node, parentScope):
 
         args = [self.traverseExpression(arg, parentScope) for arg in node['arguments']]
-        if parentScope.isOutlet(node['identifier']):
-            self.sendDataToOutlet(parentScope.outlets[node['identifier']], args)
+        identifier = node['identifier']
+        outlet = parentScope.lookUpOutlet(identifier)
+        if outlet != None:
+            self.sendDataToOutlet(outlet, args)
             return
 
-        function = parentScope.lookUpFunction(node['identifier'])
+        function = parentScope.lookUpFunction(identifier)
         fnScope = Scope(parent=parentScope)
         for argID, val in zip(function['arguments'], args):
             fnScope.addVariable(argID, val)
@@ -280,7 +298,7 @@ class Interpreter:
 
     # meant to be overridden by subclass
     def sendDataToOutlet(self, outlet, data):
-        print(f'sending data to "{outlet}": {data}')
+        print(f'TickTack: Sending data to "{outlet}": {data}')
 
 
 #---------------------------------------------------------------------------------------
@@ -293,6 +311,7 @@ if __name__ == '__main__':
     try:
         i.openSyntaxTree(path)
         i.traverseScript()
-        i.invokeOpenSoundControlCallback('/kick', [10])
+        for x in range(100):
+            i.invokeOpenSoundControlCallback('/tick', [x])
     except Exception as error:
         print(f'TickTack Interpreter Error: {error}')

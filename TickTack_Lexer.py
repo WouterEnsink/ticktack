@@ -1,7 +1,5 @@
 # TickTack Lexer
 
-from OSC_Interact import MessageReceiver, MessageSender
-
 
 class Tokens:
     comma               = ','
@@ -72,11 +70,13 @@ class Tokens:
     operatorType        = 'operator'
     stringLiteralType   = 'string'
 
+
     def isKeyword(word):
         for value in Tokens.keywords:
             if value == word:
                 return True
         return False
+
 
     def isIdentifierBody(charToCheck):
         return charToCheck.isnumeric() or charToCheck.isalpha() or charToCheck == '_'
@@ -84,8 +84,10 @@ class Tokens:
 # -----------------------------------------------------------------------------------------
 
 class CodeLocation:
+
     def __init__(self, code):
         self.code, self.index = code, 0
+
 
     def getLineNumber(self):
         num, i = 1, 0
@@ -96,21 +98,24 @@ class CodeLocation:
 
         return num
 
+
     def copyCurrentLocation(self):
          l = CodeLocation(self.code)
          l.index = self.index
          return l
 
+
     def throwLocationError(self, errorMessage):
-        #print(f'TickScript Error on line {self.getLineNumber()}: {errorMessage}')
-        raise Exception(f'TickScript Error on line {self.getLineNumber()}: {errorMessage}')
+        raise Exception(f'TickTack Error on line {self.getLineNumber()}: {errorMessage}')
 
 # -----------------------------------------------------------------------------------------
 
 class TokenIterator(CodeLocation):
+
     def __init__(self, code):
         super(TokenIterator, self).__init__(code)
         self.currentTokenValue, self.currentTokenType = '', ''
+
 
     def advance(self):
         self.skipWhiteSpaceAndComments()
@@ -121,11 +126,13 @@ class TokenIterator(CodeLocation):
 
         return self.matchNextToken()
 
+
     def advanceIfTokenValueIsExpected(self, expectedValue):
         if expectedValue != self.currentTokenValue:
             return False
         self.advance()
         return True
+
 
     def advanceIfTokenTypeIsExpected(self, expectedType):
         if expectedType != self.currentTokenType:
@@ -138,6 +145,7 @@ class TokenIterator(CodeLocation):
             if t == self.currentTokenValue:
                 return True
         return False
+
 
     def skipWhiteSpaceAndComments(self):
         while self.index < len(self.code) and (self.code[self.index] == ' ' or self.code[self.index] == '\t'):
@@ -159,6 +167,7 @@ class TokenIterator(CodeLocation):
 
         while self.index < len(self.code) and (self.code[self.index] == ' ' or self.code[self.index] == '\t'):
             self.index += 1
+
 
     def matchNextToken(self):
         if self.attemptOperator() or self.attemptIdentifierOrKeyword():
@@ -186,6 +195,7 @@ class TokenIterator(CodeLocation):
         self.index += len(identifier)
         return True
 
+
     def attemptOperator(self):
         for value in Tokens.operators:
             if self.code[self.index : self.index + len(value)] == value:
@@ -193,6 +203,7 @@ class TokenIterator(CodeLocation):
                 self.index += len(value)
                 return True
         return False
+
 
     def attemptNumericLiteral(self):
         if not self.code[self.index].isnumeric():
@@ -208,6 +219,7 @@ class TokenIterator(CodeLocation):
 
         self.currentTokenType, self.currentTokenValue, self.index = Tokens.numericLiteralType, number, i
         return True
+
 
     def attemptStringLiteral(self):
         if self.code[self.index] != '\'':

@@ -4,31 +4,84 @@
   "root": {
     "block_statement": [
       {
+        "variable_declaration": {
+          "identifier": "cutoffVal",
+          "constant": false,
+          "expression": {
+            "numeric_literal": 500.0
+          }
+        }
+      },
+      {
+        "variable_declaration": {
+          "identifier": "delta",
+          "constant": false,
+          "expression": {
+            "numeric_literal": 100.0
+          }
+        }
+      },
+      {
         "function_definition": {
-          "identifier": "pow",
-          "arguments": [
-            "base",
-            "exp"
-          ],
+          "identifier": "getAndUpdateCutoff",
+          "arguments": [],
           "body": {
             "block_statement": [
               {
+                "expression_statement": {
+                  "+=": [
+                    {
+                      "unqualified_name": "cutoffVal"
+                    },
+                    {
+                      "unqualified_name": "delta"
+                    }
+                  ]
+                }
+              },
+              {
                 "if_statement": {
                   "condition": {
-                    "==": [
+                    "||": [
                       {
-                        "unqualified_name": "exp"
+                        "<=": [
+                          {
+                            "unqualified_name": "cutoffVal"
+                          },
+                          {
+                            "numeric_literal": 200.0
+                          }
+                        ]
                       },
                       {
-                        "numeric_literal": 1.0
+                        ">=": [
+                          {
+                            "unqualified_name": "cutoffVal"
+                          },
+                          {
+                            "numeric_literal": 1000.0
+                          }
+                        ]
                       }
                     ]
                   },
                   "if_block": {
-                    "return_statement": {
-                      "expression": {
-                        "unqualified_name": "base"
-                      }
+                    "expression_statement": {
+                      "*=": [
+                        {
+                          "unqualified_name": "delta"
+                        },
+                        {
+                          "*": [
+                            {
+                              "numeric_literal": -1.0
+                            },
+                            {
+                              "numeric_literal": 1.0
+                            }
+                          ]
+                        }
+                      ]
                     }
                   },
                   "else_block": null
@@ -37,31 +90,7 @@
               {
                 "return_statement": {
                   "expression": {
-                    "*": [
-                      {
-                        "unqualified_name": "base"
-                      },
-                      {
-                        "function_call": {
-                          "identifier": "pow",
-                          "arguments": [
-                            {
-                              "unqualified_name": "base"
-                            },
-                            {
-                              "-": [
-                                {
-                                  "unqualified_name": "exp"
-                                },
-                                {
-                                  "numeric_literal": 1.0
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      }
-                    ]
+                    "unqualified_name": "cutoffVal"
                   }
                 }
               }
@@ -71,298 +100,28 @@
       },
       {
         "variable_declaration": {
-          "identifier": "x",
-          "constant": true,
+          "identifier": "count",
+          "constant": false,
           "expression": {
-            "function_call": {
-              "identifier": "pow",
-              "arguments": [
-                {
-                  "numeric_literal": 3.0
-                },
-                {
-                  "numeric_literal": 4.0
-                }
-              ]
-            }
+            "numeric_literal": 0.0
           }
         }
       },
       {
-        "print_statement": [
-          {
-            "unqualified_name": "x"
-          }
-        ]
-      },
-      {
-        "function_definition": {
-          "identifier": "fib",
-          "arguments": [
-            "n"
-          ],
-          "body": {
-            "block_statement": [
-              {
-                "if_statement": {
-                  "condition": {
-                    "<=": [
-                      {
-                        "unqualified_name": "n"
-                      },
-                      {
-                        "numeric_literal": 0.0
-                      }
-                    ]
-                  },
-                  "if_block": {
-                    "return_statement": {
-                      "expression": {
-                        "numeric_literal": 1.0
-                      }
-                    }
-                  },
-                  "else_block": null
-                }
-              },
-              {
-                "if_statement": {
-                  "condition": {
-                    "==": [
-                      {
-                        "unqualified_name": "n"
-                      },
-                      {
-                        "numeric_literal": 1.0
-                      }
-                    ]
-                  },
-                  "if_block": {
-                    "return_statement": {
-                      "expression": {
-                        "numeric_literal": 0.0
-                      }
-                    }
-                  },
-                  "else_block": null
-                }
-              },
-              {
-                "if_statement": {
-                  "condition": {
-                    "==": [
-                      {
-                        "unqualified_name": "n"
-                      },
-                      {
-                        "numeric_literal": 2.0
-                      }
-                    ]
-                  },
-                  "if_block": {
-                    "return_statement": {
-                      "expression": {
-                        "numeric_literal": 1.0
-                      }
-                    }
-                  },
-                  "else_block": null
-                }
-              },
-              {
-                "return_statement": {
-                  "expression": {
-                    "+": [
-                      {
-                        "function_call": {
-                          "identifier": "fib",
-                          "arguments": [
-                            {
-                              "-": [
-                                {
-                                  "unqualified_name": "n"
-                                },
-                                {
-                                  "numeric_literal": 1.0
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "function_call": {
-                          "identifier": "fib",
-                          "arguments": [
-                            {
-                              "-": [
-                                {
-                                  "unqualified_name": "n"
-                                },
-                                {
-                                  "numeric_literal": 2.0
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
-            ]
-          }
+        "outlet_declaration": {
+          "identifier": "cutoff",
+          "address": "/cutoff"
         }
       },
       {
-        "print_statement": [
-          {
-            "function_call": {
-              "identifier": "fib",
-              "arguments": [
-                {
-                  "numeric_literal": 9.0
-                }
-              ]
-            }
-          }
-        ]
-      },
-      {
-        "print_statement": [
-          {
-            "-": [
-              {
-                "numeric_literal": 0.0
-              },
-              {
-                "numeric_literal": 1.0
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "function_definition": {
-          "identifier": "factorial",
-          "arguments": [
-            "n"
-          ],
-          "body": {
-            "block_statement": [
-              {
-                "if_statement": {
-                  "condition": {
-                    "==": [
-                      {
-                        "unqualified_name": "n"
-                      },
-                      {
-                        "numeric_literal": 0.0
-                      }
-                    ]
-                  },
-                  "if_block": {
-                    "return_statement": {
-                      "expression": {
-                        "numeric_literal": 1.0
-                      }
-                    }
-                  },
-                  "else_block": null
-                }
-              },
-              {
-                "return_statement": {
-                  "expression": {
-                    "*": [
-                      {
-                        "unqualified_name": "n"
-                      },
-                      {
-                        "function_call": {
-                          "identifier": "factorial",
-                          "arguments": [
-                            {
-                              "-": [
-                                {
-                                  "unqualified_name": "n"
-                                },
-                                {
-                                  "numeric_literal": 1.0
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
-            ]
-          }
+        "outlet_declaration": {
+          "identifier": "note",
+          "address": "/note"
         }
-      },
-      {
-        "print_statement": [
-          {
-            "function_call": {
-              "identifier": "factorial",
-              "arguments": [
-                {
-                  "numeric_literal": 10.0
-                }
-              ]
-            }
-          }
-        ]
-      },
-      {
-        "print_statement": [
-          {
-            "-": [
-              {
-                "+": [
-                  {
-                    "numeric_literal": 8.0
-                  },
-                  {
-                    "/": [
-                      {
-                        "numeric_literal": 4.0
-                      },
-                      {
-                        "numeric_literal": 3.0
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "*": [
-                  {
-                    "numeric_literal": 3.0
-                  },
-                  {
-                    "numeric_literal": 5.0
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "numeric_literal": 50.0
-          },
-          {
-            "numeric_literal": 100.0
-          }
-        ]
       },
       {
         "osc_callback_definition": {
-          "address": "/kick",
+          "address": "/tick",
           "argumentList": [],
           "body": {
             "block_statement": [
@@ -376,49 +135,73 @@
                             "unqualified_name": "__tick__"
                           },
                           {
-                            "numeric_literal": 5
+                            "numeric_literal": 4
                           }
                         ]
                       },
                       {
-                        "numeric_literal": 4
+                        "numeric_literal": 0
                       }
                     ]
                   },
                   "if_block": {
-                    "print_statement": [
-                      {
-                        "numeric_literal": 5.0
+                    "expression_statement": {
+                      "function_call": {
+                        "identifier": "cutoff",
+                        "arguments": [
+                          {
+                            "function_call": {
+                              "identifier": "getAndUpdateCutoff",
+                              "arguments": []
+                            }
+                          }
+                        ]
                       }
-                    ]
+                    }
                   },
                   "else_block": null
                 }
               },
               {
-                "print_statement": [
-                  {
-                    "numeric_literal": 1.0
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      },
-      {
-        "outlet_declaration": {
-          "identifier": "snare",
-          "address": "/snare"
-        }
-      },
-      {
-        "expression_statement": {
-          "function_call": {
-            "identifier": "snare",
-            "arguments": [
-              {
-                "numeric_literal": 1.0
+                "if_statement": {
+                  "condition": {
+                    "==": [
+                      {
+                        "%": [
+                          {
+                            "unqualified_name": "__tick__"
+                          },
+                          {
+                            "numeric_literal": 2
+                          }
+                        ]
+                      },
+                      {
+                        "numeric_literal": 0
+                      }
+                    ]
+                  },
+                  "if_block": {
+                    "expression_statement": {
+                      "function_call": {
+                        "identifier": "note",
+                        "arguments": [
+                          {
+                            "+=": [
+                              {
+                                "unqualified_name": "count"
+                              },
+                              {
+                                "numeric_literal": 1.0
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "else_block": null
+                }
               }
             ]
           }
