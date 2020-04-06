@@ -359,6 +359,70 @@
             "numeric_literal": 100.0
           }
         ]
+      },
+      {
+        "osc_callback_definition": {
+          "address": "/kick",
+          "argumentList": [],
+          "body": {
+            "block_statement": [
+              {
+                "if_statement": {
+                  "condition": {
+                    "==": [
+                      {
+                        "%": [
+                          {
+                            "unqualified_name": "__tick__"
+                          },
+                          {
+                            "numeric_literal": 5
+                          }
+                        ]
+                      },
+                      {
+                        "numeric_literal": 4
+                      }
+                    ]
+                  },
+                  "if_block": {
+                    "print_statement": [
+                      {
+                        "numeric_literal": 5.0
+                      }
+                    ]
+                  },
+                  "else_block": null
+                }
+              },
+              {
+                "print_statement": [
+                  {
+                    "numeric_literal": 1.0
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "outlet_declaration": {
+          "identifier": "snare",
+          "address": "/snare"
+        }
+      },
+      {
+        "expression_statement": {
+          "function_call": {
+            "identifier": "snare",
+            "arguments": [
+              {
+                "numeric_literal": 1.0
+              }
+            ]
+          }
+        }
       }
     ]
   }

@@ -39,5 +39,14 @@ func factorial (n)
 
 print (factorial (10))
 
+// OSC callback with adress '/kick'
 
-print (8+4/3-3*5, 50, 100)
+'/kick' -> () {
+    [....|] print(5)
+
+    print(1)
+}
+
+outlet snare -> '/snare'
+
+snare(1.0)
