@@ -12,34 +12,31 @@ from pythonosc.osc_server import BlockingOSCUDPServer
 
 
 class MessageSender:
-    def __init__(self):
-        self.client = SimpleUDPClient("127.0.0.1", 6000)
+    def __init__(self, port):
+        self.client = SimpleUDPClient("127.0.0.1", port)
 
     def sendMessage(self, adress, messages):
         self.client.send_message(adress, messages)
 
-sender = MessageSender()
+
 
 
 class MessageReceiver(Thread):
     def __init__(self, port):
-        Thread.__init__(self)
+        super(Thread, self).__init__()
         self.dispatcher = Dispatcher()
         self.server = BlockingOSCUDPServer(('127.0.0.1', port), self.dispatcher)
-        self.dispatcher.set_default_handler(self.handler)
+        self.dispatcher.set_default_handler(self.handleMassage)
         self.start()
+
 
     def run(self):
         self.server.serve_forever()
 
-    def handler(self, adress, *args):
+
+    def handleMessage(self, adress, *args):
         print(f'handler: {adress}: {args}')
 
-    def addHandler(self, message, handler):
-        self.dispatcher.map(message, handler)
-
-    def setDefaultHandler(self, handler):
-        self.dispatcher.set_default_handler(handler)
 '''
 
 receiver = MessageReceiver(5000)

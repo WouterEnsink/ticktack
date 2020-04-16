@@ -2,20 +2,20 @@
 /** Example TickTack script */
 
 
-var cutoffVal = 500     // hz
-var delta     = 100     // hz
+var cutoffVal   = 500     // hz
+var deltaCutoff = 100     // hz
 
 func getAndUpdateCutoff()
 {
-    cutoffVal += delta
+    cutoffVal += deltaCutoff
 
     if (cutoffVal <= 200 || cutoffVal >= 1000)
-        delta *= -1
+        deltaCutoff *= -1
 
     return cutoffVal
 }
 
-var count = 0
+
 
 outlet cutoff -> '/cutoff'
 outlet note   -> '/note'
@@ -23,5 +23,5 @@ outlet note   -> '/note'
 '/tick' -> ()
 {
     [|...] cutoff (getAndUpdateCutoff())
-    [|.] note (count += 1)
+    [..|..] note(60)
 }

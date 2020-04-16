@@ -14,7 +14,7 @@
       },
       {
         "variable_declaration": {
-          "identifier": "delta",
+          "identifier": "deltaCutoff",
           "constant": false,
           "expression": {
             "numeric_literal": 100.0
@@ -34,7 +34,7 @@
                       "unqualified_name": "cutoffVal"
                     },
                     {
-                      "unqualified_name": "delta"
+                      "unqualified_name": "deltaCutoff"
                     }
                   ]
                 }
@@ -69,7 +69,7 @@
                     "expression_statement": {
                       "*=": [
                         {
-                          "unqualified_name": "delta"
+                          "unqualified_name": "deltaCutoff"
                         },
                         {
                           "*": [
@@ -95,15 +95,6 @@
                 }
               }
             ]
-          }
-        }
-      },
-      {
-        "variable_declaration": {
-          "identifier": "count",
-          "constant": false,
-          "expression": {
-            "numeric_literal": 0.0
           }
         }
       },
@@ -172,12 +163,12 @@
                             "unqualified_name": "__tick__"
                           },
                           {
-                            "numeric_literal": 2
+                            "numeric_literal": 5
                           }
                         ]
                       },
                       {
-                        "numeric_literal": 0
+                        "numeric_literal": 2
                       }
                     ]
                   },
@@ -187,14 +178,7 @@
                         "identifier": "note",
                         "arguments": [
                           {
-                            "+=": [
-                              {
-                                "unqualified_name": "count"
-                              },
-                              {
-                                "numeric_literal": 1.0
-                              }
-                            ]
+                            "numeric_literal": 60.0
                           }
                         ]
                       }
