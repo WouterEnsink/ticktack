@@ -14,13 +14,16 @@ class FileChangeListener(FileSystemEventHandler):
     def startListening(self):
         self.shouldRun = True
         self.thread.start()
+        print(f'startListening to {self.filePath}')
+
 
     def run(self):
+        print('running listenert')
         observer = Observer()
         observer.schedule(self, path='.', recursive=False)
         observer.start()
 
-        while self.shouldRun:
+        while True:
             time.sleep(1)
 
         observer.join()
@@ -32,13 +35,14 @@ class FileChangeListener(FileSystemEventHandler):
 
 
     def on_modified(self, event):
+        print('file on_modified')
         if event.src_path == self.filePath:
             self.fileChanged(self.filePath)
 
 
     # meant to be overridden by subclass
-    def fileChanged(self, newFileData):
-        pass
+    def fileChanged(self, filePath):
+        print(f'file Changed: {filePath}')
 
 
 

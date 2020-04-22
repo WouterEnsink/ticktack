@@ -6,7 +6,6 @@ import json, sys
 
 
 class Scope:
-
     def __init__(self, parent=None):
         self.parent, self.variables, self.functionDefinitions, self.oscCallbacks = parent, {}, {}, {}
         self.returnValue = '[undifined]'
@@ -111,6 +110,10 @@ class Interpreter:
     def openSyntaxTree(self, path):
         with open(path, 'r') as file:
             self.tree = json.load(file)
+
+    def runScript(self, tree):
+        self.tree = tree
+        self.traverseScript()
 
 
     def invokeOpenSoundControlCallback(self, address, arguments):
@@ -272,7 +275,6 @@ class Interpreter:
 
 
     def traverseFunctionCall(self, node, parentScope):
-
         args = [self.traverseExpression(arg, parentScope) for arg in node['arguments']]
         identifier = node['identifier']
         outlet = parentScope.lookUpOutlet(identifier)

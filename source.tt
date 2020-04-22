@@ -15,7 +15,7 @@ func getAndUpdateCutoff()
     return cutoffVal
 }
 
-
+print(1)
 
 outlet cutoff -> '/cutoff'
 outlet note   -> '/note'
@@ -23,5 +23,5 @@ outlet note   -> '/note'
 '/tick' -> ()
 {
     [|...] cutoff (getAndUpdateCutoff())
-    [..|..] note(60)
+    [..|..] note(3)
 }

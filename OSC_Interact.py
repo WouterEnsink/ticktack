@@ -15,23 +15,25 @@ class MessageSender:
     def __init__(self, port):
         self.client = SimpleUDPClient("127.0.0.1", port)
 
-    def sendMessage(self, adress, messages):
-        self.client.send_message(adress, messages)
+    def sendMessage(self, address, messages):
+        print(f'sending message {address}: {messages}')
+        self.client.send_message(address, messages)
 
 
 
-
-class MessageReceiver(Thread):
+class MessageReceiver:
     def __init__(self, port):
-        super(Thread, self).__init__()
+        print(f'Setting up Receiver with port: {port}')
         self.dispatcher = Dispatcher()
         self.server = BlockingOSCUDPServer(('127.0.0.1', port), self.dispatcher)
-        self.dispatcher.set_default_handler(self.handleMassage)
-        self.start()
+        self.dispatcher.set_default_handler(self.handleMessage)
+        self.thread = Thread(target=self.run)
+        self.thread.start()
 
 
     def run(self):
         self.server.serve_forever()
+        print('done with receiver thread')
 
 
     def handleMessage(self, adress, *args):
