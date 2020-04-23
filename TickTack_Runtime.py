@@ -22,6 +22,7 @@ class ChangeHandler(FileChangeListener):
         self.changeHandler = func
 
 
+
 class Runtime(Interpreter, MessageSender, MessageReceiver):
     def __init__(self, filePath, receiverPort, senderPort):
         Interpreter.__init__(self)
@@ -43,7 +44,9 @@ class Runtime(Interpreter, MessageSender, MessageReceiver):
 
     def fileChanged(self, path):
         tree = self.attemptParsing(path)
-        self.runScript(tree)
+
+        if tree != None:
+            self.runScript(tree)
 
 
     def attemptParsing(self, filePath):

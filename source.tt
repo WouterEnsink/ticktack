@@ -2,26 +2,43 @@
 /** Example TickTack script */
 
 
-var cutoffVal   = 500     // hz
-var deltaCutoff = 100     // hz
+var cutoffVal   = 100     // hz
+var deltaCutoff = 200     // hz
 
 func getAndUpdateCutoff()
 {
     cutoffVal += deltaCutoff
 
-    if (cutoffVal <= 200 || cutoffVal >= 1000)
+    if (cutoffVal <= 50 || cutoffVal >= 5000)
         deltaCutoff *= -1
 
     return cutoffVal
 }
 
-print(1)
+outlet c -> '/cutoff'
+outlet k -> '/kick'
+outlet s -> '/snare'
+outlet b -> '/bass'
 
-outlet cutoff -> '/cutoff'
-outlet note   -> '/note'
+
+let bass_1 = 59
+let bass_2 = 63
+let bass_3 = 68
+
+var bassNote = bass_1
+
+func getNextBassNote()
+{
+    if (bassNote == bass_1) return bassNote = bass_2
+    if (bassNote == bass_2) return bassNote = bass_3
+    if (bassNote == bass_3) return bassNote = bass_1
+}
+
 
 '/tick' -> ()
 {
-    [|...] cutoff (getAndUpdateCutoff())
-    [..|..] note(3)
+    [|.] k(1)
+    [...|.] s(1)
+    [|...] b (getNextBassNote())
+    [|.] c (getAndUpdateCutoff())
 }
